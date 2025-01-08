@@ -15,11 +15,17 @@ load_dotenv(".env")
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix='/', intents=intents)
 
-with open("data.json", "r") as targets:
+with open("details/data.json", "r") as targets:
     data = json.load(targets)
 
 async def siege_track():
     ubiIDs = {}
+    #for player in data["players"]:
+        #name = player["name"]
+        #uid = player["uid"]
+        #rank_points = player["rank_points"]
+        #rank = player["rank"]
+        #print(f"Name: {name}, UID: {uid}, Rank Points: {rank_points}, Rank: {rank}")
 
 @bot.event
 async def on_ready():
