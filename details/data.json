@@ -2,11 +2,13 @@
     "players": [
         {
             "name": "That9464",
+            "uid": "3929bca3-9018-4a80-b1e1-851a953ba7be",
             "rank_points": 3700,
             "rank": "Emerald 3"
         },
         {
             "name": "SIXftJole.-",
+            "uid": "fccd4a88-bd5a-47d7-bb65-0c27d22bd045",
             "rank_points": 0,
             "rank": "Unranked"
         }
@@ -14,10 +16,12 @@
 
     "recievers": [
         {
-            "user": "That9464"
+            "user": "That9464",
+            "discordID": "566540179632947200"
         },
         {
-            "user": "6ftjole"
+            "user": "6ftjole",
+            "discordID": "545984206136934410"
         }
     ]
 }
