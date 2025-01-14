@@ -17,11 +17,18 @@
     "recievers": [
         {
             "user": "That9464",
-            "discordID": "566540179632947200"
+            "discordID": "566540179632947200",
+            "admin": true
         },
         {
             "user": "6ftjole",
-            "discordID": "545984206136934410"
+            "discordID": "545984206136934410",
+            "admin": false
+        },
+        {
+            "user": "bdos",
+            "discordID": "516663612870492161",
+            "admin": true
         }
     ]
 }
