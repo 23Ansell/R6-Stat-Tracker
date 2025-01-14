@@ -19,13 +19,17 @@ with open("details/data.json", "r") as targets:
     data = json.load(targets)
 
 async def siege_track():
-    ubiIDs = {}
-    #for player in data["players"]:
-        #name = player["name"]
-        #uid = player["uid"]
-        #rank_points = player["rank_points"]
-        #rank = player["rank"]
-        #print(f"Name: {name}, UID: {uid}, Rank Points: {rank_points}, Rank: {rank}")
+    while True:
+        for target in data["players"]:
+            auth = Auth(os.getenv('EMAIL'), os.getenv('PASSWORD'))
+            player = await auth.get_player(uid=target["ubiID"])
+            await player.load_ranked_v2()
+            print(f"Name: {player.name}")
+            print(f"Profile pic URL: {player.profile_pic_url}")
+            print(f"Ranked Points: {player.ranked_profile.rank_points}")
+            print(f"Rank: {player.ranked_profile.rank}")
+            await auth.close()
+        await asyncio.sleep(60)
 
 @bot.event
 async def on_ready():
@@ -33,10 +37,11 @@ async def on_ready():
     print(f'{bot.user} has connected to Discord!')
     asyncio.create_task(siege_track())
 
-async def run():
+
+async def track(uid: str, discordIds: list):
     auth = Auth(os.getenv('EMAIL'), os.getenv('PASSWORD'))
 
-    player = await auth.get_player(name="That9464")
+    player = await auth.get_player(uid=uid)
 
     print(f"Name: {player.name}")
     print(f"Profile pic URL: {player.profile_pic_url}")
@@ -46,5 +51,9 @@ async def run():
     print(f"Rank: {player.ranked_profile.rank}")
 
     await auth.close()
-    
-asyncio.get_event_loop().run_until_complete(run())
+
+async def track_all_players():
+    for player in data["players"]:
+        await track(uid=player["ubiID"], discordIds=[reciever["discordID"] for reciever in data["recievers"] if reciever["user"] == player["name"]])
+
+asyncio.get_event_loop().run_until_complete(track_all_players())
