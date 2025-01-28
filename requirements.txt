@@ -1,0 +1,4 @@
+discord==2.3.2
+siegeapi==6.3.4
+matplotlib==3.7.2
+pandas==2.1.0
