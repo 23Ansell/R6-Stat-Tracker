@@ -30,11 +30,10 @@ async def on_ready():
 
 
 @bot.hybrid_command()
-async def generalstats(uid: str, ctx):
+async def generalstats(ctx, name: str):
 
     auth = Auth(os.getenv('EMAIL'), os.getenv('PASSWORD'))
-
-    player = await auth.get_player(uid=uid)
+    player = await auth.get_player(name)
 
     await player.load_persona()
     
@@ -96,4 +95,4 @@ async def track_all_players():
         await track(uid=player["ubiID"], discordIds=[reciever["discordID"] for reciever in data["recievers"] if reciever["user"] == player["name"]])
 
 
-asyncio.get_event_loop().run_until_complete(track_all_players())
+bot.run(os.getenv('DISCORD_TOKEN'))
