@@ -46,7 +46,7 @@ async def generalstats(ctx, name: str):
 
     await player.load_playtime()
     embed.add_field(name="Level", value=player.level, inline=False)
-    embed.add_field(name="Total Time Played (hours)", value=f"Total Playtime: {player.playtime.total_playtime/3600:,.0f}", inline=False)
+    embed.add_field(name="Total Time Played (hours)", value=f"Total Playtime: {player.total_time_played/3600:,.0f}", inline=False)
 
     await player.load_progress()
     embed.add_field(name="XP", value=player.xp, inline=False)
