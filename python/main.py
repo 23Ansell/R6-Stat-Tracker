@@ -78,8 +78,8 @@ async def rankedstats(ctx, name: str):
     await player.load_ranked_v2()
     embed.add_field(name="Ranked Points", value=player.ranked_profile.rank_points, inline=False)
     embed.add_field(name="Rank", value=player.ranked_profile.rank, inline=False)
-    embed.add_field(name="Max Rank Points", value=player.ranked_profile.max_rank_points, inline=False)
-    embed.add_field(name="Max Rank", value=player.ranked_profile.max_rank, inline=False)
+    embed.add_field(name="Max Rank Points (Season)", value=player.ranked_profile.max_rank_points, inline=False)
+    embed.add_field(name="Max Rank (Season)", value=player.ranked_profile.max_rank, inline=False)
 
     await ctx.send(embed=embed)
     await auth.close()
