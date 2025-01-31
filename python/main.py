@@ -59,6 +59,32 @@ async def generalstats(ctx, name: str):
 
 
 
+@bot.hybrid_command()
+async def rankedstats(ctx, name: str):
+
+    auth = Auth(os.getenv('EMAIL'), os.getenv('PASSWORD'))
+    player = await auth.get_player(name)
+
+
+    await player.load_persona()
+    
+    if not player.persona.enabled:
+        embed = discord.Embed(title=player.name, description=f"General Stats of {player.name}", color=0x00ff00)
+    else:
+        embed = discord.Embed(title=f"{player.name} ({player.persona.nickname})", description=f"General Stats of {player.name}", color=0x00ff00)
+
+    embed.set_thumbnail(url=player.profile_pic_url_256)
+
+    await player.load_ranked_v2()
+    embed.add_field(name="Ranked Points", value=player.ranked_profile.rank_points, inline=False)
+    embed.add_field(name="Rank", value=player.ranked_profile.rank, inline=False)
+    embed.add_field(name="Max Rank Points", value=player.ranked_profile.max_rank_points, inline=False)
+    embed.add_field(name="Max Rank", value=player.ranked_profile.max_rank, inline=False)
+
+    await ctx.send(embed=embed)
+    await auth.close()
+
+
 
 async def track(uid: str, discordIds: list):
     auth = Auth(os.getenv('EMAIL'), os.getenv('PASSWORD'))
