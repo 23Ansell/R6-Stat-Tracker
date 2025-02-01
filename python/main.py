@@ -230,4 +230,76 @@ async def stop_tracking(ctx):
     await ctx.send("Stopping all player tracking. This may take a few moments to complete.")
 
 
+@bot.hybrid_command()
+async def add_player(ctx, username: str):
+    user_id = str(ctx.author.id)
+    
+    admin = False
+    for receiver in data["recievers"]:
+        if receiver["discordID"] == user_id and receiver["admin"]:
+            admin = True
+            break
+    
+    if not admin:
+        await ctx.send("No permission.")
+        return
+
+    auth = Auth(os.getenv('EMAIL'), os.getenv('PASSWORD'))
+    player = await auth.get_player(username)
+    ubiID = player.id
+    
+    for existing_player in data["players"]:
+        if existing_player["ubiID"] == ubiID:
+            await ctx.send(f"{username} is already being tracked.")
+            await auth.close()
+            return
+    
+    new_player = {
+        "name": username,
+        "ubiID": ubiID
+    }
+    
+    data["players"].append(new_player)
+    
+    with open("details/data.json", "w") as f:
+        json.dump(data, f, indent=4)
+        
+    await ctx.send(f"Successfully added {username} to tracking list.")
+    await auth.close()
+
+
+@bot.hybrid_command()
+async def remove_player(ctx, username: str):
+    user_id = str(ctx.author.id)
+    
+    admin = False
+    for receiver in data["recievers"]:
+        if receiver["discordID"] == user_id and receiver["admin"]:
+            admin = True
+            break
+    
+    if not admin:
+        await ctx.send("No permission.")
+        return
+
+    auth = Auth(os.getenv('EMAIL'), os.getenv('PASSWORD'))
+    player_found = False
+    for player in data["players"]:
+        if player["name"].lower() == username.lower():
+            data["players"].remove(player)
+            player_found = True
+            break
+            
+    if not player_found:
+        await ctx.send(f"{username} is not being tracked.")
+        await auth.close()
+        return
+        
+    with open("details/data.json", "w") as f:
+        json.dump(data, f, indent=4)
+        
+    await ctx.send(f"Successfully removed {username} from tracking list.")
+    await auth.close()
+
+
 bot.run(os.getenv('DISCORD_TOKEN'))
