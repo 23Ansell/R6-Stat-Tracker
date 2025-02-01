@@ -12,6 +12,7 @@ import json
 
 
 load_dotenv(".env")
+is_tracking = False
 
 
 intents = discord.Intents.all()
@@ -26,7 +27,6 @@ with open("details/data.json", "r") as targets:
 async def on_ready():
     await bot.tree.sync()
     print(f'{bot.user} has connected to Discord!')
-    asyncio.create_task(track_all_players())
 
 
 @bot.hybrid_command()
@@ -101,9 +101,133 @@ async def gunstats(ctx: commands.Context, gunclass: Literal['AR', 'SMG', 'MP', '
     await ctx.send(file=file)
 
 
-#async def track_all_players():
-    #for player in data["players"]:
-        #await track(uid=player["ubiID"], discordIds=[reciever["discordID"] for reciever in data["recievers"] if reciever["user"] == player["name"]])
+async def track(uid: str, discordIds: list):
+    global is_tracking
+    while is_tracking:
+        try:
+            auth = Auth(os.getenv('EMAIL'), os.getenv('PASSWORD'))
+
+            player = await auth.get_player(uid=uid)
+
+            await player.load_ranked_v2()
+            oldMMR = player.ranked_profile.rank_points
+            oldKills = player.ranked_profile.kills
+            oldDeaths = player.ranked_profile.deaths
+            oldWins = player.ranked_profile.wins
+            oldLosses = player.ranked_profile.losses
+
+            await player.load_ranked_v2()
+            newMMR = player.ranked_profile.rank_points
+            newKills = player.ranked_profile.kills
+            newDeaths = player.ranked_profile.deaths
+            newWins = player.ranked_profile.wins
+            newLosses = player.ranked_profile.losses
+
+            if newMMR != oldMMR:
+                mmrChange = newMMR - oldMMR
+
+                winLossRatio = round(newWins / newLosses, 1)
+                overallKD = round(newKills / newDeaths, 1)
+                matchKills = newKills - oldKills
+                matchDeaths = newDeaths - oldDeaths
+                matchKD = round((newKills - oldKills) / (newDeaths - oldDeaths), 1)
+
+                if mmrChange > 0:
+                    mmrChange = f"+{mmrChange}"
+
+                await player.load_persona()
+    
+                if not player.persona.enabled:
+                    embed = discord.Embed(title=player.name, color=0x00ff00)
+                else:
+                    embed = discord.Embed(title=f"{player.name} ({player.persona.nickname})", color=0x00ff00)
+
+                embed.add_field(name="Match Stats", value="", inline=False)
+                embed.add_field(name="MMR Change", value=mmrChange, inline=False)
+                embed.add_field(name="KD", value=f"{matchKills} - {matchDeaths} ({matchKD})", inline=False)
+
+                embed.add_field(name="New Ranked Stats", value="", inline=False)
+                embed.add_field(name="W/L Ratio", value=winLossRatio, inline=False)
+                embed.add_field(name="Overall KD", value=overallKD, inline=False)
+
+                for discordId in discordIds:
+                    try:
+                        user = await bot.fetch_user(discordId)
+                        await user.send(embed=embed)
+                        print(f'Sent DM to {discordId}')
+
+                    except discord.HTTPException:
+                        print(f'Failed to send DM to {discordId}')
+                        continue
+            
+            else:
+                print(f"No change in MMR detected for {player.name}")
+
+            await auth.close()
+
+            await asyncio.sleep(150)
+
+        except RecursionError:
+            print("Recursion Error")
+            
+            if is_tracking:
+                continue
+
+            continue
+
+        except Exception as e:
+            print(f"An error occurred: {e}")
+            break
+
+
+@bot.hybrid_command()
+async def track_all_players(ctx):
+    global is_tracking
+    user_id = str(ctx.author.id)
+    
+    user_is_admin = False
+    for receiver in data["recievers"]:
+        if receiver["discordID"] == user_id and receiver["admin"]:
+            user_is_admin = True
+            break
+    
+    if not user_is_admin:
+        await ctx.send("You do not have permission to use this command. Admin access required.")
+        return
+
+    if is_tracking:
+        await ctx.send("Already tracking players. Use `/stop_tracking` to stop first.")
+        return
+        
+    is_tracking = True
+    await ctx.send("Started tracking all players.")
+    
+    for player in data["players"]:
+        asyncio.create_task(track(uid=player["ubiID"], 
+            discordIds=[reciever["discordID"] for reciever in data["recievers"] if reciever["user"] == player["name"]]))
+        
+
+@bot.hybrid_command()
+async def stop_tracking(ctx):
+    global is_tracking
+    user_id = str(ctx.author.id)
+    
+    user_is_admin = False
+    for receiver in data["recievers"]:
+        if receiver["discordID"] == user_id and receiver["admin"]:
+            user_is_admin = True
+            break
+    
+    if not user_is_admin:
+        await ctx.send("You do not have permission to use this command. Admin access required.")
+        return
+
+    if not is_tracking:
+        await ctx.send("No tracking is currently active.")
+        return
+        
+    is_tracking = False
+    await ctx.send("Stopping all player tracking. This may take a few moments to complete.")
 
 
 bot.run(os.getenv('DISCORD_TOKEN'))
