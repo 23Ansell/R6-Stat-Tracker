@@ -58,7 +58,6 @@ async def generalstats(ctx, name: str):
     await auth.close()
 
 
-
 @bot.hybrid_command()
 async def rankedstats(ctx, name: str):
 
@@ -85,40 +84,26 @@ async def rankedstats(ctx, name: str):
     await auth.close()
 
 
-
-async def track(uid: str, discordIds: list):
-    auth = Auth(os.getenv('EMAIL'), os.getenv('PASSWORD'))
-
-    player = await auth.get_player(uid=uid)
-
-    print(f"Name: {player.name}")
-
-    await player.load_persona()
-    if not player.persona.enabled:
-        print(player.name)
-    else:
-        print(f"{player.name} ({player.persona.nickname})")
-    print(f"Profile pic URL: {player.profile_pic_url}")
-
-    await player.load_ranked_v2()
-    print(f"Ranked Points: {player.ranked_profile.rank_points}")
-    print(f"Rank: {player.ranked_profile.rank}")
-
-    await player.load_playtime()
-    print(f"{player.name} ({player.level})")
-
-    await player.load_progress()
-    print(f"XP: {player.xp}")
-    print(f"Total XP: {player.total_xp}")
-    print(f"Level: {player.level}")
-    print(f"XP to level up: {player.xp_to_level_up}")
-
-    await auth.close()
+@bot.hybrid_command()
+async def gunstats(ctx: commands.Context, gunclass: Literal['AR', 'SMG', 'MP', 'LMG', 'DMR', 'SG', 'PISTOL', 'OTHER']):
+    df = pd.read_csv('gunData.csv')
+    filtered_df = df[df['Category'] == gunclass]
+    filtered_df = filtered_df.sort_values(by='DPS')
+    plt.figure(figsize=(10, 6))
+    plt.bar(filtered_df['Name'], filtered_df['DPS'], color='skyblue')
+    plt.xlabel('Gun Name')
+    plt.ylabel('DPS')
+    plt.title(f'Gun DPS for Category {gunclass}')
+    plt.xticks(rotation=45, ha='right')
+    plt.tight_layout()
+    plt.savefig('temp.png')
+    file = discord.File('temp.png')
+    await ctx.send(file=file)
 
 
-async def track_all_players():
-    for player in data["players"]:
-        await track(uid=player["ubiID"], discordIds=[reciever["discordID"] for reciever in data["recievers"] if reciever["user"] == player["name"]])
+#async def track_all_players():
+    #for player in data["players"]:
+        #await track(uid=player["ubiID"], discordIds=[reciever["discordID"] for reciever in data["recievers"] if reciever["user"] == player["name"]])
 
 
 bot.run(os.getenv('DISCORD_TOKEN'))
