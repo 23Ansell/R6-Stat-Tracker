@@ -2,15 +2,21 @@
     "players": [
         {
             "name": "That9464",
-            "ubiID": "3929bca3-9018-4a80-b1e1-851a953ba7be"
+            "ubiID": "3929bca3-9018-4a80-b1e1-851a953ba7be",
+            "currentRankPoints": 0,
+            "rank": "Copper 5"
         },
         {
             "name": "SIXftJole.-",
-            "ubiID": "fccd4a88-bd5a-47d7-bb65-0c27d22bd045"
+            "ubiID": "fccd4a88-bd5a-47d7-bb65-0c27d22bd045",
+            "currentRankPoints": 0,
+            "rank": "Copper 5"
         },
         {
             "name": "IIlIIIIllIlIIII",
-            "ubiID": "5786c76b-bec4-418b-b1c3-7d6e37f84dde"
+            "ubiID": "5786c76b-bec4-418b-b1c3-7d6e37f84dde",
+            "currentRankPoints": 0,
+            "rank":"Copper 5"
         }
     ],
     "recievers": [

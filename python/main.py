@@ -149,6 +149,8 @@ async def track(uid: str, discordIds: list):
                 embed.add_field(name="New Ranked Stats", value="", inline=False)
                 embed.add_field(name="W/L Ratio", value=winLossRatio, inline=False)
                 embed.add_field(name="Overall KD", value=overallKD, inline=False)
+                embed.add_field(name="Rank" , value=player.ranked_profile.rank, inline=False)
+                embed.add_field(name="Rank Points", value=newMMR, inline=False)
 
                 for discordId in discordIds:
                     try:
@@ -246,6 +248,11 @@ async def add_player(ctx, username: str):
 
     auth = Auth(os.getenv('EMAIL'), os.getenv('PASSWORD'))
     player = await auth.get_player(username)
+
+    await player.load_ranked_v2()
+    rankPoints = player.ranked_profile.rank_points
+    rank = player.ranked_profile.rank
+    
     ubiID = player.id
     
     for existing_player in data["players"]:
@@ -256,7 +263,9 @@ async def add_player(ctx, username: str):
     
     new_player = {
         "name": username,
-        "ubiID": ubiID
+        "ubiID": ubiID,
+        "currentRankPoints": rankPoints,
+        "currentRank": rank
     }
     
     data["players"].append(new_player)
