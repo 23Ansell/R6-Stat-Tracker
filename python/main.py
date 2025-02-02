@@ -252,6 +252,10 @@ async def add_player(ctx, username: str):
     await player.load_ranked_v2()
     rankPoints = player.ranked_profile.rank_points
     rank = player.ranked_profile.rank
+    kills = player.ranked_profile.kills
+    deaths = player.ranked_profile.deaths
+    wins = player.ranked_profile.wins
+    losses = player.ranked_profile.losses
     
     ubiID = player.id
     
@@ -264,8 +268,11 @@ async def add_player(ctx, username: str):
     new_player = {
         "name": username,
         "ubiID": ubiID,
-        "currentRankPoints": rankPoints,
-        "currentRank": rank
+        "rankPoints": rankPoints,
+        "kills": kills,
+        "deaths": deaths,
+        "wins": wins,
+        "losses": losses
     }
     
     data["players"].append(new_player)
