@@ -109,12 +109,16 @@ async def track(uid: str, discordIds: list):
 
             player = await auth.get_player(uid=uid)
 
-            await player.load_ranked_v2()
-            oldMMR = player.ranked_profile.rank_points
-            oldKills = player.ranked_profile.kills
-            oldDeaths = player.ranked_profile.deaths
-            oldWins = player.ranked_profile.wins
-            oldLosses = player.ranked_profile.losses
+            oldStats = None
+            for player_data in data["players"]:
+                if player_data["ubiID"] == uid:
+                    oldStats = player_data
+                    oldMMR = oldStats["rankPoints"]
+                    oldKills = oldStats["kills"]  
+                    oldDeaths = oldStats["deaths"]
+                    oldWins = oldStats["wins"]
+                    oldLosses = oldStats["losses"]
+                    break
 
             await player.load_ranked_v2()
             newMMR = player.ranked_profile.rank_points
@@ -144,7 +148,7 @@ async def track(uid: str, discordIds: list):
 
                 embed.add_field(name="Match Stats", value="", inline=False)
                 embed.add_field(name="MMR Change", value=mmrChange, inline=False)
-                embed.add_field(name="KD", value=f"{matchKills} - {matchDeaths} ({matchKD})", inline=False)
+                embed.add_field(name="KD", value=f"{matchKills - matchDeaths} ({matchKD})", inline=False)
 
                 embed.add_field(name="New Ranked Stats", value="", inline=False)
                 embed.add_field(name="W/L Ratio", value=winLossRatio, inline=False)
