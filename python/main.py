@@ -204,6 +204,44 @@ async def track(uid: str, discordIds: list):
 
 
 @bot.hybrid_command()
+async def track_player(ctx, username: str):
+    global is_tracking
+    user_id = str(ctx.author.id)
+    
+    user_is_admin = False
+    for receiver in data["recievers"]:
+        if receiver["discordID"] == user_id and receiver["admin"]:
+            user_is_admin = True
+            break
+    
+    if not user_is_admin:
+        await ctx.send("You do not have permission to use this command. Admin access required.")
+        return
+
+    player_found = False
+    player_uid = None
+    for player in data["players"]:
+        if player["name"].lower() == username.lower():
+            player_found = True
+            player_uid = player["ubiID"]
+            break
+
+    if not player_found:
+        await ctx.send(f"Player {username} not found in tracking list. Add them first using `/add_player`.")
+        return
+
+    if is_tracking:
+        await ctx.send("Already tracking players. Use `/stop_tracking` to stop first.")
+        return
+        
+    is_tracking = True
+    await ctx.send(f"Started tracking {username}.")
+    
+    discordIds = [receiver["discordID"] for receiver in data["recievers"]]
+    asyncio.create_task(track(uid=player_uid, discordIds=discordIds))
+
+
+@bot.hybrid_command()
 async def track_all_players(ctx):
     global is_tracking
     user_id = str(ctx.author.id)
