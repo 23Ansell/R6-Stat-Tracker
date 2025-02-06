@@ -134,7 +134,10 @@ async def track(uid: str, discordIds: list):
                 overallKD = round(newKills / newDeaths, 1)
                 matchKills = newKills - oldKills
                 matchDeaths = newDeaths - oldDeaths
-                matchKD = round((newKills - oldKills) / (newDeaths - oldDeaths), 1)
+                if matchDeaths == 0:
+                    matchKD = matchKills
+                else:
+                    matchKD = round((matchKills) / (matchDeaths), 1)
 
                 if mmrChange > 0:
                     mmrChange = f"+{mmrChange}"
