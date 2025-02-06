@@ -156,15 +156,29 @@ async def track(uid: str, discordIds: list):
                 embed.add_field(name="Rank" , value=player.ranked_profile.rank, inline=False)
                 embed.add_field(name="Rank Points", value=newMMR, inline=False)
 
-                for discordId in discordIds:
+                for receiver in data["recievers"]:
                     try:
-                        user = await bot.fetch_user(discordId)
+                        user = await bot.fetch_user(receiver["discordID"])
                         await user.send(embed=embed)
-                        print(f'Sent DM to {discordId}')
+                        print(f'Sent DM to {receiver["user"]}')
 
                     except discord.HTTPException:
-                        print(f'Failed to send DM to {discordId}')
+                        print(f'Failed to send DM to {receiver["user"]}')
                         continue
+
+                # Update player stats in data
+                for player_data in data["players"]:
+                    if player_data["ubiID"] == uid:
+                        player_data["rankPoints"] = newMMR
+                        player_data["kills"] = newKills
+                        player_data["deaths"] = newDeaths 
+                        player_data["wins"] = newWins
+                        player_data["losses"] = newLosses
+                        break
+
+                # Save updated data to file
+                with open("details/data.json", "w") as f:
+                    json.dump(data, f, indent=4)
             
             else:
                 print(f"No change in MMR detected for {player.name}")
