@@ -29,6 +29,7 @@ async def on_ready():
     print(f'{bot.user} has connected to Discord!')
 
 
+# Returns the general stats of a player
 @bot.hybrid_command()
 async def generalstats(ctx, name: str):
 
@@ -58,6 +59,7 @@ async def generalstats(ctx, name: str):
     await auth.close()
 
 
+# Returns the ranked stats of a player
 @bot.hybrid_command()
 async def rankedstats(ctx, name: str):
 
@@ -84,6 +86,7 @@ async def rankedstats(ctx, name: str):
     await auth.close()
 
 
+# Get the current gun stats for a specific category
 @bot.hybrid_command()
 async def gunstats(ctx: commands.Context, gunclass: Literal['AR', 'SMG', 'MP', 'LMG', 'DMR', 'SG', 'PISTOL', 'OTHER']):
     df = pd.read_csv('gunData.csv')
@@ -101,6 +104,7 @@ async def gunstats(ctx: commands.Context, gunclass: Literal['AR', 'SMG', 'MP', '
     await ctx.send(file=file)
 
 
+# Used to track a player's stats
 async def track(uid: str, discordIds: list):
     global is_tracking
     while is_tracking:
@@ -127,6 +131,7 @@ async def track(uid: str, discordIds: list):
             newWins = player.ranked_profile.wins
             newLosses = player.ranked_profile.losses
 
+            # Check if there is a change in MMR
             if newMMR != oldMMR:
                 mmrChange = newMMR - oldMMR
 
@@ -134,6 +139,8 @@ async def track(uid: str, discordIds: list):
                 overallKD = round(newKills / newDeaths, 1)
                 matchKills = newKills - oldKills
                 matchDeaths = newDeaths - oldDeaths
+
+                # Calculate KD
                 if matchDeaths == 0:
                     matchKD = matchKills
                 else:
@@ -159,12 +166,14 @@ async def track(uid: str, discordIds: list):
                 embed.add_field(name="Rank" , value=player.ranked_profile.rank, inline=False)
                 embed.add_field(name="Rank Points", value=newMMR, inline=False)
 
+                # Send DM to all receivers
                 for receiver in data["recievers"]:
                     try:
                         user = await bot.fetch_user(receiver["discordID"])
                         await user.send(embed=embed)
                         print(f'Sent DM to {receiver["user"]}')
 
+                    # Handle exceptions
                     except discord.HTTPException:
                         print(f'Failed to send DM to {receiver["user"]}')
                         continue
@@ -190,6 +199,7 @@ async def track(uid: str, discordIds: list):
 
             await asyncio.sleep(150)
 
+        # Handle exceptions
         except RecursionError:
             print("Recursion Error")
             
@@ -198,16 +208,19 @@ async def track(uid: str, discordIds: list):
 
             continue
 
+        # Handle exceptions
         except Exception as e:
             print(f"An error occurred: {e}")
             break
 
 
+# Track a player
 @bot.hybrid_command()
 async def track_player(ctx, username: str):
     global is_tracking
     user_id = str(ctx.author.id)
     
+    # Check if user is an admin
     user_is_admin = False
     for receiver in data["recievers"]:
         if receiver["discordID"] == user_id and receiver["admin"]:
@@ -218,6 +231,7 @@ async def track_player(ctx, username: str):
         await ctx.send("You do not have permission to use this command. Admin access required.")
         return
 
+    # Check if player exists in tracking list
     player_found = False
     player_uid = None
     for player in data["players"]:
@@ -237,15 +251,18 @@ async def track_player(ctx, username: str):
     is_tracking = True
     await ctx.send(f"Started tracking {username}.")
     
+    # Get all receivers and start tracking
     discordIds = [receiver["discordID"] for receiver in data["recievers"]]
     asyncio.create_task(track(uid=player_uid, discordIds=discordIds))
 
 
+# Track all players
 @bot.hybrid_command()
 async def track_all_players(ctx):
     global is_tracking
     user_id = str(ctx.author.id)
     
+    # Check if user is an admin
     user_is_admin = False
     for receiver in data["recievers"]:
         if receiver["discordID"] == user_id and receiver["admin"]:
@@ -263,11 +280,13 @@ async def track_all_players(ctx):
     is_tracking = True
     await ctx.send("Started tracking all players.")
     
+    # Start tracking all players
     for player in data["players"]:
         asyncio.create_task(track(uid=player["ubiID"], 
             discordIds=[reciever["discordID"] for reciever in data["recievers"] if reciever["user"] == player["name"]]))
         
 
+# Stop tracking all players
 @bot.hybrid_command()
 async def stop_tracking(ctx):
     global is_tracking
@@ -291,10 +310,12 @@ async def stop_tracking(ctx):
     await ctx.send("Stopping all player tracking. This may take a few moments to complete.")
 
 
+# Add a player to the tracking list
 @bot.hybrid_command()
 async def add_player(ctx, username: str):
     user_id = str(ctx.author.id)
     
+    # Check if user is an admin
     admin = False
     for receiver in data["recievers"]:
         if receiver["discordID"] == user_id and receiver["admin"]:
@@ -318,12 +339,14 @@ async def add_player(ctx, username: str):
     
     ubiID = player.id
     
+    # Check if player is already being tracked
     for existing_player in data["players"]:
         if existing_player["ubiID"] == ubiID:
             await ctx.send(f"{username} is already being tracked.")
             await auth.close()
             return
     
+    # Add player to tracking list
     new_player = {
         "name": username,
         "ubiID": ubiID,
@@ -336,6 +359,7 @@ async def add_player(ctx, username: str):
     
     data["players"].append(new_player)
     
+    # Save updated data to file
     with open("details/data.json", "w") as f:
         json.dump(data, f, indent=4)
         
@@ -343,6 +367,7 @@ async def add_player(ctx, username: str):
     await auth.close()
 
 
+# Remove a player from the tracking list
 @bot.hybrid_command()
 async def remove_player(ctx, username: str):
     user_id = str(ctx.author.id)
@@ -370,6 +395,7 @@ async def remove_player(ctx, username: str):
         await auth.close()
         return
         
+    # Save updated data to file
     with open("details/data.json", "w") as f:
         json.dump(data, f, indent=4)
         
