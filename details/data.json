@@ -52,6 +52,11 @@
             "user": "bdos",
             "discordID": "516663612870492161",
             "admin": true
+        },
+        {
+            "user": "charlie:)",
+            "discordID": "767127215980019743",
+            "admin": false
         }
     ]
 }
