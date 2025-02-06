@@ -158,7 +158,7 @@ async def track(uid: str, discordIds: list):
 
                 embed.add_field(name="Match Stats", value="", inline=False)
                 embed.add_field(name="MMR Change", value=mmrChange, inline=False)
-                embed.add_field(name="KD", value=f"{matchKills - matchDeaths} ({matchKD})", inline=False)
+                embed.add_field(name="KD", value=f"{matchKills} - {matchDeaths} ({matchKD})", inline=False)
 
                 embed.add_field(name="New Ranked Stats", value="", inline=False)
                 embed.add_field(name="W/L Ratio", value=winLossRatio, inline=False)
