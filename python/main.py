@@ -284,6 +284,52 @@ async def track_all_players(ctx):
     for player in data["players"]:
         asyncio.create_task(track(uid=player["ubiID"], 
             discordIds=[reciever["discordID"] for reciever in data["recievers"] if reciever["user"] == player["name"]]))
+
+
+# Update all player stats
+@bot.hybrid_command()
+async def update_player_stats(ctx):
+    user_id = str(ctx.author.id)
+    
+    # Check if user is an admin
+    user_is_admin = False
+    for receiver in data["recievers"]:
+        if receiver["discordID"] == user_id and receiver["admin"]:
+            user_is_admin = True
+            break
+    
+    if not user_is_admin:
+        await ctx.send("You do not have permission to use this command. Admin access required.")
+        return
+
+    auth = Auth(os.getenv('EMAIL'), os.getenv('PASSWORD'))
+    update_count = 0
+    
+    # Update each player's stats
+    for player_data in data["players"]:
+        try:
+            player = await auth.get_player(uid=player_data["ubiID"])
+            await player.load_ranked_v2()
+            
+            # Update player stats in data
+            player_data["rankPoints"] = player.ranked_profile.rank_points
+            player_data["kills"] = player.ranked_profile.kills
+            player_data["deaths"] = player.ranked_profile.deaths
+            player_data["wins"] = player.ranked_profile.wins
+            player_data["losses"] = player.ranked_profile.losses
+            
+            update_count += 1
+            
+        except Exception as e:
+            print(f"Error updating {player_data['name']}: {e}")
+            continue
+
+    # Save updated data to file
+    with open("details/data.json", "w") as f:
+        json.dump(data, f, indent=4)
+
+    await ctx.send(f"Successfully updated stats for {update_count} players.")
+    await auth.close()
         
 
 # Stop tracking all players
